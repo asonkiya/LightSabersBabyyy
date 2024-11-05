@@ -13,8 +13,16 @@ public class LightsaberScript : MonoBehaviour
     private float localScaleX, localScaleZ;
     public GameObject blade;
 
+    public AudioClip powerOnSound;   
+    public AudioClip powerOffSound;  
+    public AudioClip swingSound;     
+
+    private AudioSource audioSource;
+    private bool isSwinging;
+
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         localScaleX = transform.localScale.x;
         localScaleZ = transform.localScale.z;
         scaleMax = transform.localScale.y;
@@ -27,6 +35,7 @@ public class LightsaberScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             extendDelta = weaponActive ? -Mathf.Abs(extendDelta) : Mathf.Abs(extendDelta);
+            PlayPowerSound();
         }
 
         scaleCurrent += extendDelta * Time.deltaTime;
@@ -41,6 +50,31 @@ public class LightsaberScript : MonoBehaviour
         else if (!weaponActive && blade.activeSelf)
         {
             blade.SetActive(false);
+        }
+
+        PlaySwingSound();
+    }
+
+    private void PlayPowerSound()
+    {
+        audioSource.clip = weaponActive ? powerOnSound : powerOffSound;
+        audioSource.Play();
+    }
+
+    private void PlaySwingSound()
+    {
+        if (!weaponActive) return;
+
+        float bladeSpeed = Mathf.Abs(extendDelta * Time.deltaTime);
+        if (bladeSpeed > 0.5f && !isSwinging)
+        {
+            audioSource.clip = swingSound;
+            audioSource.Play();
+            isSwinging = true;
+        }
+        else if (bladeSpeed <= 0.5f)
+        {
+            isSwinging = false;
         }
     }
 }
